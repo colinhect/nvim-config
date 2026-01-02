@@ -16,6 +16,8 @@ vim.o.termguicolors = true
 vim.o.updatetime = 50
 vim.o.wrap = false
 vim.o.hlsearch = true
+vim.o.clipboard = "unnamedplus"
+vim.o.undofile = true
 --:
 
 --: Basic keymaps
@@ -151,6 +153,7 @@ vim.keymap.set('n', '<leader>sq', telescope_builtin.quickfix, { desc = 'Search Q
 vim.keymap.set('n', '<leader>sk', telescope_builtin.keymaps, { desc = 'Search Keymaps' })
 vim.keymap.set('n', '<leader>sh', telescope_builtin.help_tags, { desc = 'Search Help' })
 vim.keymap.set('n', '<leader>sw', telescope_builtin.grep_string, { desc = 'Search Current Word In Files' })
+vim.keymap.set('n', '<leader>sr', telescope_builtin.resume, { desc = 'Resume Previous Search' })
 
 vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, { desc = "Go To Definition (LSP)", noremap = true, silent = true })
 vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, { desc = "Show Symbol Info (LSP)", noremap = true, silent = true })
