@@ -203,14 +203,12 @@ vim.keymap.set('n', '<leader>aa', ":CopilotChatToggle<CR>", { desc = 'Copilot Ch
 vim.keymap.set('v', '<leader>aa', function()
     require("CopilotChat").open()
 end, { desc = "Copilot Chat (With Selection)" })
-vim.api.nvim_create_autocmd("BufEnter", {
-  pattern = "*",
+vim.api.nvim_create_autocmd('BufEnter', {
+  pattern = 'copilot-*',
   callback = function()
-    if vim.bo.filetype == "copilot-chat" then
-      vim.opt_local.number = false
-      vim.opt_local.relativenumber = false
-      vim.opt_local.signcolumn = "no" -- Also removes the gutter space
-    end
+    vim.opt_local.relativenumber = false
+    vim.opt_local.number = false
+    vim.opt_local.conceallevel = 0
   end,
 })
 --:
