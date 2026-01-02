@@ -7,7 +7,6 @@ vim.o.number = true
 vim.o.scrolloff = 8
 vim.o.shiftwidth = 4
 vim.o.showmode = false
-vim.o.signcolumn = "yes"
 vim.o.smartindent = true
 vim.o.softtabstop = 4
 vim.o.swapfile = false
@@ -18,6 +17,8 @@ vim.o.wrap = false
 vim.o.hlsearch = true
 vim.o.clipboard = "unnamedplus"
 vim.o.undofile = true
+vim.o.ignorecase = true
+vim.o.smartcase = true
 --:
 
 --: Basic keymaps
@@ -65,6 +66,7 @@ whichkey.add(
         { "<leader>f", group = "Files" },
         { "<leader>s", group = "Search" },
         { "<leader>l", group = "LSP" },
+        { "<leader>g", group = "Git" },
     }, { mode = "n" })
 --:
 
@@ -201,6 +203,16 @@ vim.keymap.set('n', '<leader>aa', ":CopilotChatToggle<CR>", { desc = 'Copilot Ch
 vim.keymap.set('v', '<leader>aa', function()
     require("CopilotChat").open()
 end, { desc = "Copilot Chat (With Selection)" })
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*",
+  callback = function()
+    if vim.bo.filetype == "copilot-chat" then
+      vim.opt_local.number = false
+      vim.opt_local.relativenumber = false
+      vim.opt_local.signcolumn = "no" -- Also removes the gutter space
+    end
+  end,
+})
 --:
 
 --: diffview
@@ -214,23 +226,19 @@ vim.pack.add({
 	{ src = "https://github.com/fei6409/log-highlight.nvim" },
 })
 require('log-highlight').setup {
-	-- The following options support either a string or a table of strings.
-
-	-- The file extensions.
 	extension = 'log',
-
-	-- The file names or the full file paths.
 	filename = {
 		'messages',
 	},
-
-	-- The file path glob patterns, e.g. `.*%.lg`, `/var/log/.*`.
-	-- Note: `%.` is to match a literal dot (`.`) in a pattern in Lua, but most
-	-- of the time `.` and `%.` here make no observable difference.
 	pattern = {
 		'/var/log/.*',
 		'messages%..*',
 	}
 }
 --:
+
+vim.pack.add({
+	{ src = "https://github.com/kdheepak/lazygit.nvim" },
+})
+vim.keymap.set('n', '<leader>gg', ":LazyGit<CR>", { desc = 'LazyGit' })
 
