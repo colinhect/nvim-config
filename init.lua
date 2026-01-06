@@ -67,6 +67,7 @@ whichkey.add(
         { "<leader>s", group = "Search" },
         { "<leader>l", group = "LSP" },
         { "<leader>g", group = "Git" },
+        { "<leader>c", group = "Code" },
     }, { mode = "n" })
 --:
 
@@ -168,6 +169,8 @@ vim.keymap.set("n", "<leader>lr", function() vim.lsp.buf.references() end, { des
 vim.keymap.set("n", "<leader>ln", function() vim.lsp.buf.rename() end, { desc = "Find References (LSP)", noremap = true, silent = true })
 vim.keymap.set("n", "<leader>ls", function() vim.lsp.buf.hover() end, { desc = "Show Symbol Info (LSP)", noremap = true, silent = true })
 vim.keymap.set("n", "<leader>lf", function() vim.lsp.buf.format() end, { desc = "Format (LSP)", noremap = true, silent = true })
+
+vim.keymap.set("n", "<leader>ch", ":LspClangdSwitchSourceHeader<CR>", { desc = "Switch To Header/Source File", noremap = true, silent = true })
 --:
 
 --: nvim-lspconfig
@@ -176,6 +179,7 @@ vim.pack.add({
 })
 vim.lsp.enable({"clangd", "basedpyright"})
 --:
+
 
 --: tiny-inline-diagnostic
 vim.pack.add({
@@ -240,5 +244,7 @@ vim.pack.add({
 	{ src = "https://github.com/kdheepak/lazygit.nvim" },
 })
 vim.keymap.set('n', '<leader>gg', ":LazyGit<CR>", { desc = 'LazyGit' })
+vim.keymap.set('n', '<leader>gf', ":LazyGitFilterCurrentFile<CR>", { desc = 'LazyGit Current File' })
+vim.keymap.set('n', '<leader>gl', ":LazyGitLog<CR>", { desc = 'LazyGit Log' })
 --:
 
