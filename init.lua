@@ -252,7 +252,7 @@ vim.keymap.set('n', '<leader>gl', ":LazyGitLog<CR>", { desc = 'LazyGit Log' })
 vim.pack.add({
 	{ src = "https://github.com/nvim-lualine/lualine.nvim" },
 })
-require('lualine').setup()
+require('lualine').setup { extensions = { "quickfix", "fugitive", "nvim-tree", "nvim-dap-ui" } }
 --:
 
 --: vim-fugitive (git)
@@ -261,3 +261,8 @@ vim.pack.add({
 })
 --:
 
+--: render-markdown
+vim.pack.add({
+	{ src = "https://github.com/MeanderingProgrammer/render-markdown.nvim" },
+})
+--:
