@@ -19,6 +19,8 @@ vim.o.clipboard = "unnamedplus"
 vim.o.undofile = true
 vim.o.ignorecase = true
 vim.o.smartcase = true
+vim.o.splitbelow = true
+vim.o.splitright = true
 --:
 
 --: Basic keymaps
@@ -77,15 +79,6 @@ vim.pack.add({
 })
 
 require 'nvim-treesitter'.install { 'bash', 'rust', 'html', 'xml', 'json', 'yaml', 'javascript', 'c', 'cpp', 'markdown', 'markdown_inline', 'python', 'lua' }
-
-vim.api.nvim_create_autocmd("FileType", {
-  group = vim.api.nvim_create_augroup("EnableTreesitterHighlighting", { clear = true }),
-  desc = "Try to enable tree-sitter syntax highlighting",
-  pattern = "*", -- run on *all* filetypes
-  callback = function()
-    pcall(function() vim.treesitter.start() end)
-  end,
-})
 --:
 
 --: nvim-tree
@@ -180,7 +173,6 @@ vim.pack.add({
 vim.lsp.enable({"clangd", "basedpyright"})
 --:
 
-
 --: tiny-inline-diagnostic
 vim.pack.add({
 	{ src = "https://github.com/rachartier/tiny-inline-diagnostic.nvim" },
@@ -202,7 +194,6 @@ dap.defaults.fallback.exception_breakpoints = {}
 vim.pack.add({
     { src = "https://github.com/CopilotC-Nvim/CopilotChat.nvim" },
 })
-vim.cmd([[ set splitright ]])
 vim.keymap.set('n', '<leader>aa', ":CopilotChatToggle<CR>", { desc = 'Copilot Chat' })
 vim.keymap.set('v', '<leader>aa', function()
     require("CopilotChat").open()
