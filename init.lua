@@ -248,3 +248,16 @@ vim.keymap.set('n', '<leader>gf', ":LazyGitFilterCurrentFile<CR>", { desc = 'Laz
 vim.keymap.set('n', '<leader>gl', ":LazyGitLog<CR>", { desc = 'LazyGit Log' })
 --:
 
+--: lualine
+vim.pack.add({
+	{ src = "https://github.com/nvim-lualine/lualine.nvim" },
+})
+require('lualine').setup()
+--:
+
+--: vim-fugitive (git)
+vim.pack.add({
+	{ src = "https://github.com/tpope/vim-fugitive" },
+})
+--:
+
