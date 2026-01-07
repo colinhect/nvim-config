@@ -70,6 +70,7 @@ whichkey.add(
         { "<leader>l", group = "LSP" },
         { "<leader>g", group = "Git" },
         { "<leader>c", group = "Code" },
+        { "<leader>d", group = "Debugger" },
     }, { mode = "n" })
 --:
 
@@ -183,11 +184,87 @@ diag.setup()
 
 --: nvim-dap
 vim.pack.add({
+    { src = "https://github.com/nvim-neotest/nvim-nio" },
 	{ src = "https://github.com/mfussenegger/nvim-dap" },
+    { src = "https://github.com/rcarriga/nvim-dap-ui" },
 })
 local dap = require("dap")
 dap.defaults.fallback.auto_continue_if_many_stopped = false
 dap.defaults.fallback.exception_breakpoints = {}
+
+dap.adapters.gdb = {
+    id = 'gdb',
+    type = 'executable',
+    command = 'gdb',
+    args = { '--quiet', '--interpreter=dap' },
+}
+
+dap.configurations.cpp = {
+    {
+        name = 'Run executable (GDB)',
+        type = 'gdb',
+        request = 'launch',
+        -- This requires special handling of 'run_last', see
+        -- https://github.com/mfussenegger/nvim-dap/issues/1025#issuecomment-1695852355
+        program = function()
+            local path = vim.fn.input({
+                prompt = 'Path to executable: ',
+                default = vim.fn.getcwd() .. '/',
+                completion = 'file',
+            })
+
+            return (path and path ~= '') and path or dap.ABORT
+        end,
+    },
+    {
+        name = 'Run executable with arguments (GDB)',
+        type = 'gdb',
+        request = 'launch',
+        -- This requires special handling of 'run_last', see
+        -- https://github.com/mfussenegger/nvim-dap/issues/1025#issuecomment-1695852355
+        program = function()
+            local path = vim.fn.input({
+                prompt = 'Path to executable: ',
+                default = vim.fn.getcwd() .. '/',
+                completion = 'file',
+            })
+
+            return (path and path ~= '') and path or dap.ABORT
+        end,
+        args = function()
+            local args_str = vim.fn.input({
+                prompt = 'Arguments: ',
+            })
+            return vim.split(args_str, ' +')
+        end,
+    },
+    {
+        name = 'Attach to process (GDB)',
+        type = 'gdb',
+        request = 'attach',
+        processId = require('dap.utils').pick_process,
+    },
+}
+
+vim.keymap.set('n', '<F12>', function() require('dap').continue() end, { desc = "Continue" })
+vim.keymap.set('n', '<F10>', function() require('dap').step_over() end, { desc = "Step Over" })
+vim.keymap.set('n', '<F11>', function() require('dap').step_into() end, { desc = "Step Into" })
+vim.keymap.set('n', '<F23>', function() require('dap').step_out() end, { desc = "Step Out" })
+vim.keymap.set('n', '<Leader>db', function() require('dap').toggle_breakpoint() end, { desc = "Toggle Breakpoint" })
+--vim.keymap.set('n', '<Leader>dB', function() require('dap').set_breakpoint() end)
+--vim.keymap.set('n', '<Leader>lp', function() require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end)
+vim.keymap.set('n', '<Leader>dr', function() require('dap').repl.open() end, { desc = "Debugger REPL" })
+--vim.keymap.set('n', '<Leader>dl', function() require('dap').run_last() end, { desc = "Debugger Run Last" })
+vim.keymap.set('n', '<Leader>dt', function() require('dapui').terminate() end, { desc = "Terminate Debug Session" })
+
+--vim.keymap.set({'n', 'v'}, '<Leader>dh', function() require('dap.ui.widgets').hover() end, { desc = "Debugger Widgets Hover" })
+--vim.keymap.set({'n', 'v'}, '<Leader>dp', function() require('dap.ui.widgets').preview() end, { desc = "Debugger Widgets Preview" })
+--vim.keymap.set('n', '<Leader>df', function() local widgets = require('dap.ui.widgets') widgets.centered_float(widgets.frames) end, { desc = "Debugger Widgets Frames" })
+--vim.keymap.set('n', '<Leader>ds', function() local widgets = require('dap.ui.widgets') widgets.centered_float(widgets.scopes) end, { desc = "Debugger Widgets Scopes" })
+require("dapui").setup()
+
+vim.keymap.set('n', '<Leader>du', function() require('dapui').toggle() end, { desc = "Toggle Debugger UI" })
+
 --:
 
 --: CopilotChat
