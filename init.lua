@@ -140,6 +140,7 @@ require('telescope').setup({
 
 vim.keymap.set('n', '<leader>b', telescope_builtin.buffers, { desc = 'Open Buffers' })
 
+vim.keymap.set('n', '<leader><space>', telescope_builtin.find_files, { desc = 'Find Files' })
 vim.keymap.set('n', '<leader>ff', telescope_builtin.find_files, { desc = 'Find Files' })
 vim.keymap.set('n', '<leader>fr', telescope_builtin.oldfiles, { desc = 'Find Recent Files' })
 
@@ -151,6 +152,8 @@ vim.keymap.set('n', '<leader>sk', telescope_builtin.keymaps, { desc = 'Search Ke
 vim.keymap.set('n', '<leader>sh', telescope_builtin.help_tags, { desc = 'Search Help' })
 vim.keymap.set('n', '<leader>sw', telescope_builtin.grep_string, { desc = 'Search Current Word In Files' })
 vim.keymap.set('n', '<leader>sr', telescope_builtin.resume, { desc = 'Resume Previous Search' })
+vim.keymap.set('n', '<leader>ss', telescope_builtin.lsp_dynamic_workspace_symbols, { desc = 'Search Workspace Symbols' })
+vim.keymap.set('n', '<leader>sd', telescope_builtin.lsp_document_symbols, { desc = 'Search Document Symbols' })
 
 vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, { desc = "Go To Definition (LSP)", noremap = true, silent = true })
 vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, { desc = "Show Symbol Info (LSP)", noremap = true, silent = true })
@@ -171,6 +174,16 @@ vim.keymap.set("n", "<leader>ch", ":LspClangdSwitchSourceHeader<CR>", { desc = "
 vim.pack.add({
 	{ src = "https://github.com/neovim/nvim-lspconfig.git" },
 })
+vim.lsp.config.clangd = {
+  cmd = {
+    'clangd',
+    --'--clang-tidy',
+    '--header-insertion=never',
+    '--background-index',
+  },
+  root_markers = { '.clangd', 'compile_commands.json' },
+  filetypes = { 'c', 'cpp' },
+}
 vim.lsp.enable({"clangd", "basedpyright"})
 --:
 
@@ -246,24 +259,26 @@ dap.configurations.cpp = {
     },
 }
 
-vim.keymap.set('n', '<F12>', function() require('dap').continue() end, { desc = "Continue" })
+vim.keymap.set('n', '<F12>', function() require('dap').continue() end, { desc = "Continue or Start Debugging" })
 vim.keymap.set('n', '<F10>', function() require('dap').step_over() end, { desc = "Step Over" })
 vim.keymap.set('n', '<F11>', function() require('dap').step_into() end, { desc = "Step Into" })
 vim.keymap.set('n', '<F23>', function() require('dap').step_out() end, { desc = "Step Out" })
-vim.keymap.set('n', '<Leader>db', function() require('dap').toggle_breakpoint() end, { desc = "Toggle Breakpoint" })
+vim.keymap.set('n', '<leader>db', function() require('dap').toggle_breakpoint() end, { desc = "Toggle Breakpoint" })
+vim.keymap.set('n', '<leader>dt', function() require('dap').disconnect() end, { desc = "Terminate Debug Session" })
+vim.keymap.set('n', '<leader>dk', function() require('dap').up() end, { desc = "Move Up Callstack" })
+vim.keymap.set('n', '<leader>dj', function() require('dap').down() end, { desc = "Move Down Callstack" })
+
+--vim.keymap.set('n', '<leader>dr', function() require('dap').repl.open() end, { desc = "Debugger REPL" })
 --vim.keymap.set('n', '<Leader>dB', function() require('dap').set_breakpoint() end)
 --vim.keymap.set('n', '<Leader>lp', function() require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end)
-vim.keymap.set('n', '<Leader>dr', function() require('dap').repl.open() end, { desc = "Debugger REPL" })
 --vim.keymap.set('n', '<Leader>dl', function() require('dap').run_last() end, { desc = "Debugger Run Last" })
-vim.keymap.set('n', '<Leader>dt', function() require('dapui').terminate() end, { desc = "Terminate Debug Session" })
-
 --vim.keymap.set({'n', 'v'}, '<Leader>dh', function() require('dap.ui.widgets').hover() end, { desc = "Debugger Widgets Hover" })
 --vim.keymap.set({'n', 'v'}, '<Leader>dp', function() require('dap.ui.widgets').preview() end, { desc = "Debugger Widgets Preview" })
 --vim.keymap.set('n', '<Leader>df', function() local widgets = require('dap.ui.widgets') widgets.centered_float(widgets.frames) end, { desc = "Debugger Widgets Frames" })
 --vim.keymap.set('n', '<Leader>ds', function() local widgets = require('dap.ui.widgets') widgets.centered_float(widgets.scopes) end, { desc = "Debugger Widgets Scopes" })
+--
 require("dapui").setup()
-
-vim.keymap.set('n', '<Leader>du', function() require('dapui').toggle() end, { desc = "Toggle Debugger UI" })
+vim.keymap.set('n', '<leader>du', function() require('dapui').toggle() end, { desc = "Toggle Debugger UI" })
 
 --:
 
