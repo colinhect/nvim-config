@@ -1,5 +1,6 @@
 --: Options
 vim.g.mapleader = ' '
+vim.g.editorconfig = false
 vim.o.backup = false
 vim.o.expandtab = true
 vim.o.incsearch = true
@@ -80,6 +81,10 @@ vim.pack.add({
 })
 
 require 'nvim-treesitter'.install { 'bash', 'rust', 'html', 'xml', 'json', 'yaml', 'javascript', 'c', 'cpp', 'markdown', 'markdown_inline', 'python', 'lua' }
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'markdown', 'markdown_inline', 'copilot-chat' },
+  callback = function() vim.treesitter.start() end,
+})
 --:
 
 --: nvim-tree
