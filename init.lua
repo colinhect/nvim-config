@@ -22,6 +22,8 @@ vim.o.ignorecase = true
 vim.o.smartcase = true
 vim.o.splitbelow = true
 vim.o.splitright = true
+vim.o.autoread = true
+vim.opt.shortmess:append("I") -- Don't show start-up message
 --:
 
 --: Basic keymaps
@@ -72,6 +74,7 @@ whichkey.add(
         { "<leader>g", group = "Git" },
         { "<leader>c", group = "Code" },
         { "<leader>d", group = "Debugger" },
+        { "<leader>x", group = "Execute Code" },
     }, { mode = "n" })
 --:
 
@@ -80,9 +83,9 @@ vim.pack.add({
 	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" },
 })
 
-require 'nvim-treesitter'.install { 'bash', 'rust', 'html', 'xml', 'json', 'yaml', 'javascript', 'c', 'cpp', 'markdown', 'markdown_inline', 'python', 'lua' }
+require 'nvim-treesitter'.install { 'python', 'bash', 'rust', 'html', 'xml', 'json', 'yaml', 'javascript', 'c', 'cpp', 'markdown', 'markdown_inline', 'lua', 'diff', 'html', 'latex', 'yaml',  }
 vim.api.nvim_create_autocmd('FileType', {
-  pattern = { 'markdown', 'markdown_inline', 'copilot-chat' },
+  pattern = { 'markdown', 'markdown_inline', 'copilot-chat', 'python', 'cpp', 'c', 'lua', 'diff', 'rust', 'bash' },
   callback = function() vim.treesitter.start() end,
 })
 --:
@@ -156,7 +159,7 @@ vim.keymap.set('n', '<leader>sq', telescope_builtin.quickfix, { desc = 'Search Q
 vim.keymap.set('n', '<leader>sk', telescope_builtin.keymaps, { desc = 'Search Keymaps' })
 vim.keymap.set('n', '<leader>sh', telescope_builtin.help_tags, { desc = 'Search Help' })
 vim.keymap.set('n', '<leader>sw', telescope_builtin.grep_string, { desc = 'Search Current Word In Files' })
-vim.keymap.set('n', '<leader>sr', telescope_builtin.resume, { desc = 'Resume Previous Search' })
+vim.keymap.set('n', '<leader>sR', telescope_builtin.resume, { desc = 'Resume Previous Search' })
 vim.keymap.set('n', '<leader>ss', telescope_builtin.lsp_dynamic_workspace_symbols, { desc = 'Search Workspace Symbols' })
 vim.keymap.set('n', '<leader>sd', telescope_builtin.lsp_document_symbols, { desc = 'Search Document Symbols' })
 
@@ -189,7 +192,7 @@ vim.lsp.config.clangd = {
   root_markers = { '.clangd', 'compile_commands.json' },
   filetypes = { 'c', 'cpp' },
 }
-vim.lsp.enable({"clangd", "basedpyright"})
+vim.lsp.enable({"clangd", "pyright"})
 --:
 
 --: tiny-inline-diagnostic
@@ -291,10 +294,8 @@ vim.keymap.set('n', '<leader>du', function() require('dapui').toggle() end, { de
 vim.pack.add({
     { src = "https://github.com/CopilotC-Nvim/CopilotChat.nvim" },
 })
-vim.keymap.set('n', '<leader>aa', ":CopilotChatToggle<CR>", { desc = 'Copilot Chat' })
-vim.keymap.set('v', '<leader>aa', function()
-    require("CopilotChat").open()
-end, { desc = "Copilot Chat (With Selection)" })
+vim.keymap.set('n', '<leader>aa', function() require("CopilotChat").open() end, { desc = 'Copilot Chat' })
+vim.keymap.set('v', '<leader>aa', function() require("CopilotChat").open() end, { desc = "Copilot Chat (With Selection)" })
 vim.api.nvim_create_autocmd('BufEnter', {
   pattern = 'copilot-*',
   callback = function()
@@ -335,6 +336,7 @@ vim.keymap.set('n', '<leader>gg', ":LazyGit<CR>", { desc = 'LazyGit' })
 vim.keymap.set('n', '<leader>gf', ":LazyGitFilterCurrentFile<CR>", { desc = 'LazyGit Current File' })
 vim.keymap.set('n', '<leader>gl', ":LazyGitLog<CR>", { desc = 'LazyGit Log' })
 vim.keymap.set('n', '<leader>gb', ":Git blame<CR>", { desc = 'Git Blame Current File' })
+vim.keymap.set('n', '<leader>gd', ":Gdiffsplit<CR>", { desc = 'Git Diff Current File' })
 --:
 
 --: lualine
@@ -350,8 +352,146 @@ vim.pack.add({
 })
 --:
 
+--: spectre (search and replace)
+vim.pack.add({
+	{ src = "https://github.com/nvim-pack/nvim-spectre" },
+})
+vim.keymap.set('n', '<leader>sr', '<cmd>lua require("spectre").toggle()<CR>', {
+    desc = "Toggle Spectre"
+})
+--:
+
 --: render-markdown
 vim.pack.add({
 	{ src = "https://github.com/MeanderingProgrammer/render-markdown.nvim" },
 })
 --:
+
+local function find_code_section(bufnr, cursor_row)
+  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  local start, finish, lang
+  for i = cursor_row, 1, -1 do
+    local s = lines[i]
+    local m = s:match("^```(%w+)")
+    if m then
+      start = i
+      lang = m
+      break
+    end
+  end
+  if not start then
+    return
+  end
+  for i = cursor_row + 1, #lines do
+    if lines[i]:match("^```") then
+      finish = i
+      break
+    end
+  end
+  if not finish then
+    return
+  end
+  return lang, start, finish
+end
+
+local function execute_code_section(interactive, shell)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local mode = vim.fn.mode()
+  local code, lang
+
+  if mode == "v" or mode == "V" or mode == "\22" then -- visual, linewise visual, blockwise visual
+    local start_line = vim.fn.line("v")
+    local end_line = vim.fn.line(".")
+    if start_line > end_line then
+      start_line, end_line = end_line, start_line
+    end
+    code = vim.fn.getline(start_line, end_line)
+    lang, _, _ = find_code_section(bufnr, start_line)
+    vim.notify(table.concat(code, " + "))
+  else
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local row = cursor[1] - 1
+    lang, start, finish = find_code_section(bufnr, row)
+    if not lang then
+      vim.notify("No code section found", vim.log.levels.ERROR)
+      return
+    end
+    code = vim.api.nvim_buf_get_lines(bufnr, start, finish - 1, false)
+  end
+
+  if shell then
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+      if vim.api.nvim_buf_get_option(bufnr, "buftype") == "terminal" then
+        local chan_id = vim.b[bufnr].terminal_job_id
+        if chan_id then
+          for _, line in ipairs(code) do
+            vim.fn.chansend(chan_id, line .. "\n")
+          end
+          break
+        end
+      end
+    end
+  else
+    local cmd
+    if lang == "sh" or lang == "bash" or lang == "shell" then
+      cmd = "sh"
+    elseif lang == "py" or lang == "python" or lang == "python3" then
+      cmd = "python3"
+    elseif lang == "lua" then
+      local code_str = table.concat(code, "\n")
+      local f, err = loadstring(code_str)
+      if not f then
+        vim.notify("Lua error: " .. err, vim.log.levels.ERROR)
+        return
+      end
+      local ok, result = pcall(f)
+      if not ok then
+        vim.notify("Lua error: " .. result, vim.log.levels.ERROR)
+      end
+      return
+    elseif lang == "vim" then
+      for _, line in ipairs(code) do
+        vim.cmd(line)
+      end
+      return
+    else
+      vim.notify("Unsupported code type: " .. lang, vim.log.levels.ERROR)
+      return
+    end
+    local tmpfile = vim.fn.tempname() .. "." .. lang
+    vim.fn.writefile(code, tmpfile)
+    if interactive then
+      vim.cmd("split | terminal " .. cmd .. " " .. tmpfile)
+    else
+      local buf = vim.api.nvim_create_buf(false, true)
+      local win = vim.api.nvim_open_win(buf, true, {
+        relative = "editor",
+        width = math.floor(vim.o.columns * 0.7),
+        height = math.floor(vim.o.lines * 0.6),
+        row = math.floor((vim.o.lines - math.floor(vim.o.lines * 0.6)) / 2),
+        col = math.floor((vim.o.columns - math.floor(vim.o.columns * 0.7)) / 2),
+        style = "minimal",
+        border = "rounded",
+      })
+      vim.fn.termopen(cmd .. " " .. tmpfile, {
+        on_exit = function()
+          vim.api.nvim_win_close(win, true)
+          vim.api.nvim_buf_delete(buf, { force = true })
+        end,
+      })
+      vim.cmd("startinsert")
+    end
+  end
+end
+
+vim.keymap.set({ "n", "v" }, "<leader>xc", function()
+  execute_code_section(false)
+end, { desc = "Execute code in current section (transient)" })
+
+vim.keymap.set({ "n", "v" }, "<leader>xC", function()
+  execute_code_section(true)
+end, { desc = "Execute code in current section (persistent)" })
+
+vim.keymap.set({ "n", "v" }, "<leader>xs", function()
+  execute_code_section(false, true)
+end, { desc = "Execute code in current section in terminal" })
