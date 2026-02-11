@@ -263,7 +263,7 @@ dap.configurations.cpp = {
         name = 'Attach to process (GDB)',
         type = 'gdb',
         request = 'attach',
-        processId = require('dap.utils').pick_process,
+        pid = require('dap.utils').pick_process,
     },
 }
 
@@ -495,3 +495,22 @@ end, { desc = "Execute code in current section (persistent)" })
 vim.keymap.set({ "n", "v" }, "<leader>xs", function()
   execute_code_section(false, true)
 end, { desc = "Execute code in current section in terminal" })
+
+function CopyBufferPathsAsCopilotPrompt()
+  local lines = {}
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_loaded(buf) then
+      local name = vim.api.nvim_buf_get_name(buf)
+      if name ~= "" and vim.fn.filereadable(name) == 1 then
+        local relpath = vim.fn.fnamemodify(name, ":.")
+        table.insert(lines, "#file:./" .. relpath)
+      end
+    end
+  end
+  local result = table.concat(lines, "\n")
+  vim.fn.setreg("+", result)
+  vim.notify("Copied " .. #lines .. " buffer path(s) to clipboard", vim.log.levels.INFO)
+  return result
+end
+
+vim.keymap.set("n", "<leader>cb", CopyBufferPathsAsCopilotPrompt, { desc = "Copy buffer paths as Copilot prompt" })
