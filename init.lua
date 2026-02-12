@@ -80,7 +80,7 @@ whichkey.add(
 
 --: treesitter
 vim.pack.add({
-	{ src = "https://github.com/nvim-treesitter/nvim-treesitter" },
+	{ src = "https://github.com/nvim-treesitter/nvim-treesitter", version="main" },
 })
 
 require 'nvim-treesitter'.install { 'python', 'bash', 'rust', 'html', 'xml', 'json', 'yaml', 'javascript', 'c', 'cpp', 'markdown', 'markdown_inline', 'lua', 'diff', 'html', 'latex', 'yaml',  }
@@ -112,7 +112,7 @@ require("nvim-tree").setup({
 
 --: blink.cmp
 vim.pack.add({
-	{ src = "https://github.com/Saghen/blink.cmp", version = "v1.6.0" },
+	{ src = "https://github.com/Saghen/blink.cmp", version = "v1.9.1" },
 })
 require("blink.cmp").setup({
 	keymap = { preset = 'default' },
