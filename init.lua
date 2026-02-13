@@ -88,6 +88,17 @@ vim.api.nvim_create_autocmd('FileType', {
   pattern = { 'markdown', 'markdown_inline', 'copilot-chat', 'python', 'cpp', 'c', 'lua', 'diff', 'rust', 'bash' },
   callback = function() vim.treesitter.start() end,
 })
+
+vim.pack.add({
+	{ src = "https://github.com/nvim-treesitter/nvim-treesitter-context.git" },
+})
+require'treesitter-context'.setup{
+  enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+  multiline_threshold = 20, -- Maximum number of lines to show for a single context
+  trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
+  mode = 'cursor',  -- Line used to calculate context. Choices: 'cursor', 'topline'
+  separator = '─',
+}
 --:
 
 --: nvim-tree
@@ -305,6 +316,8 @@ vim.api.nvim_create_autocmd('BufEnter', {
   end,
 })
 --:
+
+vim.keymap.set('n', '<leader>ar', ":vsplit|term artifice --full<CR>", { desc = 'Artifice' })
 
 --: diffview
 vim.pack.add({
