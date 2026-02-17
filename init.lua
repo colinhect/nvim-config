@@ -73,6 +73,7 @@ whichkey.add(
         { "<leader>l", group = "LSP" },
         { "<leader>g", group = "Git" },
         { "<leader>c", group = "Code" },
+        { "<leader>u", group = "UI" },
         { "<leader>d", group = "Debugger" },
         { "<leader>x", group = "Execute Code" },
     }, { mode = "n" })
@@ -99,6 +100,17 @@ require'treesitter-context'.setup{
   mode = 'cursor',  -- Line used to calculate context. Choices: 'cursor', 'topline'
   separator = '─',
 }
+vim.keymap.set({'n', 'i'}, '<leader>ut', function()
+    local tsc = require("treesitter-context")
+    if tsc.enabled then
+        tsc.disable()
+        tsc.enabled = false
+    else
+        tsc.enable()
+        tsc.enabled = true
+    end
+
+end, { desc = "Toggle Treesitter Context" })
 --:
 
 --: nvim-tree
