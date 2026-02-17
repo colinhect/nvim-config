@@ -93,24 +93,24 @@ vim.api.nvim_create_autocmd('FileType', {
 vim.pack.add({
 	{ src = "https://github.com/nvim-treesitter/nvim-treesitter-context.git" },
 })
-require'treesitter-context'.setup{
+local tsc = require("treesitter-context")
+tsc.setup{
   enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
   multiline_threshold = 20, -- Maximum number of lines to show for a single context
   trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
   mode = 'cursor',  -- Line used to calculate context. Choices: 'cursor', 'topline'
   separator = '─',
+
 }
-vim.keymap.set({'n', 'i'}, '<leader>ut', function()
-    local tsc = require("treesitter-context")
+function toggle_treesitter_context()
     if tsc.enabled then
         tsc.disable()
-        tsc.enabled = false
     else
         tsc.enable()
-        tsc.enabled = true
     end
-
-end, { desc = "Toggle Treesitter Context" })
+    tsc.enabled = not tsc.enabled
+end
+vim.keymap.set({'n', 'i'}, "<leader>ut", toggle_treesitter_context, { desc = "Toggle Treesitter Context" })
 --:
 
 --: nvim-tree
