@@ -95,7 +95,7 @@ vim.pack.add({
 })
 local tsc = require("treesitter-context")
 tsc.setup{
-  enable = true, -- Enable this plugin (Can be enabled/disabled later via commands)
+  enable = false, -- Enable this plugin (Can be enabled/disabled later via commands)
   multiline_threshold = 20, -- Maximum number of lines to show for a single context
   trim_scope = 'outer', -- Which context lines to discard if `max_lines` is exceeded. Choices: 'inner', 'outer'
   mode = 'cursor',  -- Line used to calculate context. Choices: 'cursor', 'topline'
@@ -103,12 +103,7 @@ tsc.setup{
 
 }
 function toggle_treesitter_context()
-    if tsc.enabled then
-        tsc.disable()
-    else
-        tsc.enable()
-    end
-    tsc.enabled = not tsc.enabled
+    tsc.toggle()
 end
 vim.keymap.set({'n', 'i'}, "<leader>ut", toggle_treesitter_context, { desc = "Toggle Treesitter Context" })
 --:
