@@ -184,7 +184,6 @@ vim.keymap.set('n', '<leader>sd', telescope_builtin.lsp_document_symbols, { desc
 vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, { desc = "Go To Definition (LSP)", noremap = true, silent = true })
 vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, { desc = "Show Symbol Info (LSP)", noremap = true, silent = true })
 
-vim.keymap.set("n", "<leader>la", function() vim.lsp.buf.definition() end, { desc = "Code Actions (LSP)", noremap = true, silent = true })
 vim.keymap.set("n", "<leader>ld", function() vim.lsp.buf.definition() end, { desc = "Go To Definition (LSP)", noremap = true, silent = true })
 vim.keymap.set("n", "<leader>lt", function() vim.lsp.buf.type_definition() end, { desc = "Go To Type Definition (LSP)", noremap = true, silent = true })
 vim.keymap.set("n", "<leader>li", function() vim.lsp.buf.implementation() end, { desc = "Go To Implementation (LSP)", noremap = true, silent = true })
@@ -219,6 +218,15 @@ vim.pack.add({
 })
 local diag = require("tiny-inline-diagnostic")
 diag.setup()
+--:
+
+--: outline
+vim.pack.add({
+	{ src = "https://github.com/hedyhli/outline.nvim" },
+})
+local outline = require("outline")
+outline.setup({})
+vim.keymap.set("n", "<leader>lo", "<cmd>Outline<CR>", { desc = "Symbol Outline" })
 --:
 
 --: nvim-dap
